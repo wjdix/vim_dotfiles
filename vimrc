@@ -36,7 +36,7 @@ Plug 'vim-scripts/indentpython.vim', {'commit': '6aaddfde21fe9e7acbe448b92b3cbb6
 Plug 'vim-scripts/matchit.zip', {'tag': '1.9'}
 Plug 'w0rp/ale', {'commit': 'f12d312aa4aa49c4698056933030cd5adb60b489'}
 Plug 'wlangstroth/vim-racket', {'commit': '164d93736d5cee79c77d4a8a3f722ef31d8d2f4c'}
-Plugin 'lifepillar/vim-solarized8'
+Plug 'google/vim-colorscheme-primary'
 
 call plug#end()
 
@@ -160,9 +160,8 @@ nnoremap <silent> k gk
 nnoremap <silent> j gj
 nnoremap <silent> Y y$
 
-if &t_Co == 256
-  colorscheme solarized
-endif
+set background=light
+colorscheme primary
 
 autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
 autocmd BufRead,InsertLeave * match ExtraWhitespace /\s\+$/
