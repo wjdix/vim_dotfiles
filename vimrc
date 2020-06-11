@@ -84,8 +84,6 @@ let g:no_html_toolbar = 'yes'
 let g:vim_markdown_frontmatter = 1
 let g:vim_markdown_new_list_item_indent = 2
 
-call tcomment#type#Define('unison', '-- %s')
-
 let g:rubycomplete_buffer_loading = 1
 
 let g:go_highlight_trailing_whitespace_error = 0
@@ -177,3 +175,5 @@ set statusline+=%P                        " percentage of file
 set undodir=~/.vim/undodir
 set undofile
 set undoreload=10000
+
+let NERDTreeShowHidden=1
