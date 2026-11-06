@@ -1,200 +1,166 @@
-_G.nvim_lsp = require('lspconfig')
+-- Language servers use nvim's built-in vim.lsp.config / vim.lsp.enable.
+-- nvim-lspconfig supplies the default config for each server (its lsp/
+-- directory); the calls below only add to those defaults.
 
-local configs = require('lspconfig.configs')
+local cmp = require('cmp')
 
-configs.roc = {
-  default_config = {
-    cmd = { 'roc_language_server' };
-    filetypes = {'roc'};
-    root_dir = nvim_lsp.util.root_pattern('.git');
-    settings = {};
-  }
+cmp.setup {
+  mapping = {
+    ['<C-p>'] = cmp.mapping.select_prev_item(),
+    ['<C-n>'] = cmp.mapping.select_next_item(),
+    ['<C-y>'] = cmp.mapping.confirm {
+      behavior = cmp.ConfirmBehavior.Replace,
+      select = true,
+    },
+    ['<C-X><C-O>'] = cmp.mapping.complete(),
+  },
+  snippet = {
+    expand = function(args)
+      vim.fn['vsnip#anonymous'](args.body)
+    end,
+  },
+  sources = {
+    { name = 'nvim_lsp' },
+    { name = 'buffer' },
+  },
+  completion = {
+    autocomplete = false,
+  },
 }
 
-function _G.lsp_on_attach(client, bufnr)
-  local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
-  local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
-  local function in_array(needle, haystack)
-    for k, v in pairs(haystack) do
-      if v == needle then
-        return true
-      end
+-- Servers whose formatting shouldn't run on save.
+local no_format = {
+  unison = true,
+  racket_langserver = true,
+}
+
+-- Servers whose semantic highlighting is turned off.
+local no_highlight = {
+  fsautocomplete = true,
+  roc_ls = true,
+}
+
+local format_group = vim.api.nvim_create_augroup('lsp_format_on_save', { clear = true })
+
+vim.api.nvim_create_autocmd('LspAttach', {
+  group = vim.api.nvim_create_augroup('lsp_attach', { clear = true }),
+  callback = function(args)
+    local bufnr = args.buf
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if not client then
+      return
     end
 
-    return false
-  end
+    local function map(lhs, rhs)
+      vim.keymap.set('n', lhs, rhs, { buffer = bufnr, silent = true })
+    end
 
-  local opts = { noremap=true, silent=true }
+    map('<C-]>', vim.lsp.buf.definition)
+    map('K', vim.lsp.buf.hover)
+    map('<LocalLeader>ca', vim.lsp.buf.code_action)
+    map('<LocalLeader>cl', vim.lsp.codelens.refresh)
+    map('<LocalLeader>cr', vim.lsp.codelens.run)
+    map('<LocalLeader>cd', vim.diagnostic.open_float)
 
-  buf_set_keymap('n', '<C-]>', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
-  buf_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
-  buf_set_keymap('n', '<LocalLeader>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
-  buf_set_keymap('n', '<LocalLeader>cl', '<cmd>lua vim.lsp.codelens.refresh()<CR>', opts)
-  buf_set_keymap('n', '<LocalLeader>cr', '<cmd>lua vim.lsp.codelens.run()<CR>', opts)
-  buf_set_keymap('n', '<LocalLeader>cd', '<cmd>lua vim.diagnostic.open_float()<CR>', opts)
+    if not no_format[client.name] then
+      vim.api.nvim_clear_autocmds({ group = format_group, buffer = bufnr })
+      vim.api.nvim_create_autocmd('BufWritePre', {
+        group = format_group,
+        buffer = bufnr,
+        callback = function()
+          vim.lsp.buf.format({ bufnr = bufnr })
+        end,
+      })
+    end
 
-  local no_format = {
-    'unison',
-    'racket_langserver',
-  }
+    if no_highlight[client.name] then
+      client.server_capabilities.semanticTokensProvider = nil
+    end
+  end,
+})
 
-  if not in_array(client.name, no_format) then
-    vim.api.nvim_command([[autocmd BufWritePre <buffer> lua vim.lsp.buf.format()]])
-  end
+vim.lsp.config('*', {
+  capabilities = require('cmp_nvim_lsp').default_capabilities(),
+})
 
-  local no_hightlight = {
-    'fsautocomplete',
-    'roc',
-  }
-
-  if in_array(client.name, no_hightlight) then
-    client.server_capabilities.semanticTokensProvider = nil
-  end
-
-  local cmp = require 'cmp'
-
-  cmp.setup {
-    mapping = {
-      ['<C-p>'] = cmp.mapping.select_prev_item(),
-      ['<C-n>'] = cmp.mapping.select_next_item(),
-      ['<C-y>'] = cmp.mapping.confirm {
-        behavior = cmp.ConfirmBehavior.Replace,
-        select = true,
-      },
-      ['<C-X><C-O>'] = cmp.mapping.complete(),
-    },
-    snippet = {
-      expand = function(args)
-        vim.fn['vsnip#anonymous'](args.body)
-      end,
-    },
-    sources = {
-      { name = 'nvim_lsp' },
-      { name = 'buffer' },
-    },
-    completion = {
-      autocomplete = false,
-    },
-  }
-end
-
-_G.lsp_capabilities = require('cmp_nvim_lsp').default_capabilities()
-
-local vanilla_servers = {
-  'dhall_lsp_server',
-  'elmls',
-  'fsautocomplete',
-  'gleam',
-  'intelephense',
-  'nickel_ls',
-  'racket_langserver',
-  'roc',
-  'rust_analyzer',
-  'ts_ls',
-  'unison',
-  'zls',
-}
-
-for _, lsp in ipairs(vanilla_servers) do
-  _G.nvim_lsp[lsp].setup {
-    on_attach = _G.lsp_on_attach,
-    capabilities = _G.lsp_capabilities,
-    flags = {
-      debounce_text_changes = 150,
-    }
-  }
-end
-
-_G.nvim_lsp['gopls'].setup {
-  on_attach = _G.lsp_on_attach,
-  capabilities = _G.lsp_capabilities,
-  flags = {
-    debounce_text_changes = 150,
-  },
+vim.lsp.config('gopls', {
   settings = {
     gopls = {
       buildFlags = {
         '-tags=wireinject,tools',
-      }
-    }
-  }
-}
+      },
+    },
+  },
+})
 
-_G.nvim_lsp['ocamllsp'].setup {
+vim.lsp.config('ocamllsp', {
   cmd = { 'opam', 'exe', '--', 'ocamllsp' },
-  on_attach = _G.lsp_on_attach,
-  capabilities = _G.lsp_capabilities,
-  flags = {
-    debounce_text_changes = 150,
-  },
-}
+})
 
-_G.nvim_lsp['purescriptls'].setup {
-  on_attach = _G.lsp_on_attach,
-  capabilities = _G.lsp_capabilities,
-  flags = {
-    debounce_text_changes = 150,
-  },
+vim.lsp.config('purescriptls', {
   settings = {
     purescript = {
       addSpagoSources = true,
       addNpmPath = true,
-      formatter = 'purs-tidy'
-    }
-  }
-}
-
-_G.nvim_lsp['pylsp'].setup {
-  on_attach = _G.lsp_on_attach,
-  capabilities = _G.lsp_capabilities,
-  flags = {
-    debounce_text_changes = 150,
+      formatter = 'purs-tidy',
+    },
   },
-  cmd = { vim.env.HOME .. '/code/dotfiles/scripts/pylsp.sh' }
-}
+})
 
-_G.nvim_lsp['hls'].setup {
-  on_attach = _G.lsp_on_attach,
-  capabilities = _G.lsp_capabilities,
-  flags = {
-    debounce_text_changes = 150,
-  },
+vim.lsp.config('pylsp', {
+  cmd = { vim.env.HOME .. '/code/dotfiles/scripts/pylsp.sh' },
+})
+
+vim.lsp.config('hls', {
   settings = {
     haskell = {
       plugin = {
         ['ghcide-completions'] = {
           config = {
-            snippetsOn = false
-          }
+            snippetsOn = false,
+          },
         },
         hlint = {
-          globalOn = false
+          globalOn = false,
         },
         stan = {
-          globalOn = false
-        }
-      }
-    }
-  }
-}
-
-_G.nvim_lsp['elixirls'].setup {
-  on_attach = _G.lsp_on_attach,
-  capabilities = _G.lsp_capabilities,
-  flags = {
-    debounce_text_changes = 150,
+          globalOn = false,
+        },
+      },
+    },
   },
+})
+
+vim.lsp.config('elixirls', {
   cmd = { vim.env.HOME .. '/code/elixir-ls/language_server.sh' },
   settings = {
     elixirLS = {
-      dialyzerEnabled = false
-    }
-  }
-}
+      dialyzerEnabled = false,
+    },
+  },
+})
 
-require('lean').setup {
-  mappings = true,
-  lsp = {
-    on_attach = _G.lsp_on_attach,
-  }
-}
+vim.lsp.enable({
+  'dhall_lsp_server',
+  'elixirls',
+  'elmls',
+  'fsautocomplete',
+  'gleam',
+  'gopls',
+  'hls',
+  'intelephense',
+  'nickel_ls',
+  'ocamllsp',
+  'purescriptls',
+  'pylsp',
+  'racket_langserver',
+  'roc_ls',
+  'rust_analyzer',
+  'ts_ls',
+  'unison',
+  'zls',
+})
+
+-- lean.nvim enables its own leanls server; the LspAttach handler above covers
+-- it too.
+vim.g.lean_config = { mappings = true }

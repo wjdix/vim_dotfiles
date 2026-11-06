@@ -4,7 +4,7 @@ syntax on
 call plug#begin('~/.config/nvim/plugged')
 
 Plug 'ChrisWellsWood/roc.vim', {'commit': 'a4b2edc029b349f05221249a6ab922d2787d2962'}
-Plug 'Julian/lean.nvim', {'commit': 'a32d035d6f5c57b83335813bcc84fb498b4e2b0f'}
+Plug 'Julian/lean.nvim', {'commit': 'daa7252fb34f6b84afd7959815ff2b9e2cb4dc15'}
 Plug 'adelarsq/neofsharp.vim', {'commit': 'f28bb9665fa859be8543b9828b477dd932743827'}
 Plug 'aklt/plantuml-syntax', {'commit': '405186847a44c16dd039bb644541b4c8fbdab095'}
 Plug 'andy-morris/alex.vim', {'commit': 'bd95024624b297e212e57582a1ece21ac5dab6b8'}
@@ -29,7 +29,7 @@ Plug 'junegunn/goyo.vim', {'commit': 'a865dec7ca7616dbbd69315ad1417b84d0c411f8'}
 Plug 'leafgarland/typescript-vim', {'commit': '67e81e4292186889a1a519e1bf3a600d671237eb'}
 Plug 'maxmellon/vim-jsx-pretty', {'commit': '6989f1663cc03d7da72b5ef1c03f87e6ddb70b41'}
 Plug 'maxmx03/solarized.nvim', {'commit': 'a8085e29883ddcfb39bd46197eb32ef00df05368'}
-Plug 'neovim/nvim-lspconfig', {'commit': 'cb33dea610b7eff240985be9f6fe219920e630ef'}
+Plug 'neovim/nvim-lspconfig', {'commit': '4d363f93c3581b9212a24f7a830d7590b3f050af'}
 Plug 'neovimhaskell/haskell-vim', {'commit': 'f35d02204b4813d1dbe8b0e98cc39701a4b8e15e'}
 Plug 'nickel-lang/vim-nickel', {'commit': 'b9c3d1fcc26f1d44cbe8c0b6c64beeac0b8c7760'}
 Plug 'nvim-lua/plenary.nvim', {'commit': '74b06c6c75e4eeb3108ec01852001636d85a932b'}
