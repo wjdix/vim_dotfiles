@@ -28,7 +28,7 @@ Plug 'junegunn/fzf', {'tag': '0.28.0', 'dir': '~/.fzf', 'do': './install --bin'}
 Plug 'junegunn/goyo.vim', {'commit': 'a865dec7ca7616dbbd69315ad1417b84d0c411f8'}
 Plug 'leafgarland/typescript-vim', {'commit': '67e81e4292186889a1a519e1bf3a600d671237eb'}
 Plug 'maxmellon/vim-jsx-pretty', {'commit': '6989f1663cc03d7da72b5ef1c03f87e6ddb70b41'}
-Plug 'nanotech/jellybeans.vim', {'commit': 'ef83bf4dc8b3eacffc97bf5c96ab2581b415c9fa'}
+Plug 'maxmx03/solarized.nvim', {'commit': 'a8085e29883ddcfb39bd46197eb32ef00df05368'}
 Plug 'neovim/nvim-lspconfig', {'commit': '9ad7021267c6caeb01f839c91ad8f15fb608807e'}
 Plug 'neovimhaskell/haskell-vim', {'commit': 'f35d02204b4813d1dbe8b0e98cc39701a4b8e15e'}
 Plug 'nickel-lang/vim-nickel', {'commit': 'b9c3d1fcc26f1d44cbe8c0b6c64beeac0b8c7760'}
@@ -53,7 +53,8 @@ Plug 'whonore/Coqtail', {'commit': 'c8ffb3d358e85211b17dd18df6007e3be1bd2569'}
 
 call plug#end()
 
-set background=dark
+set background=light
+set termguicolors
 set backspace=indent,eol,start
 set backupcopy=yes
 set completeopt=menu,menuone,noselect
@@ -92,7 +93,7 @@ if !exists('g:autoread_timer')
   let g:autoread_timer = timer_start(1000, {-> mode() =~# '^[ni]' && getcmdwintype() ==# '' ? execute('silent! checktime') : 0}, {'repeat': -1})
 endif
 
-colorscheme jellybeans
+colorscheme solarized
 
 autocmd BufNewFile,BufRead *.md,*.markdown setlocal textwidth=80 spell
 autocmd BufNewFile,BufRead *.txt setlocal textwidth=80 spell
@@ -179,16 +180,6 @@ map <silent> <LocalLeader>cb <Plug>CoqStart
 nnoremap <silent> k gk
 nnoremap <silent> j gj
 nnoremap <silent> Y y$
-
-highlight DiagnosticError ctermfg=Red guifg=Red
-highlight DiagnosticWarn ctermfg=Yellow guifg=Yellow
-highlight DiagnosticInfo ctermfg=LightBlue guifg=LightBlue
-highlight DiagnosticHint ctermfg=White guifg=White
-
-highlight DiagnosticFloatingError ctermfg=White guifg=White
-highlight DiagnosticFloatingWarn ctermfg=White guifg=White
-highlight DiagnosticFloatingInfo ctermfg=White guifg=White
-highlight DiagnosticFloatingHint ctermfg=White guifg=White
 
 highlight ExtraWhitespace ctermbg=red guibg=red
 
