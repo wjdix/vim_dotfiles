@@ -80,6 +80,18 @@ set updatetime=300
 set wildignore+=*.pyc,*.o,*.class
 set wrap
 
+" Reload files changed outside nvim (e.g. by an agent) when they're unmodified
+" here. autoread only acts on a checktime, so check on focus, buffer switch,
+" idle, and every second, which keeps a file on screen current without input.
+set autoread
+augroup autoread_checktime
+  autocmd!
+  autocmd FocusGained,BufEnter,CursorHold,CursorHoldI * if mode() !~# '[ct]' && getcmdwintype() ==# '' | silent! checktime | endif
+augroup END
+if !exists('g:autoread_timer')
+  let g:autoread_timer = timer_start(1000, {-> mode() =~# '^[ni]' && getcmdwintype() ==# '' ? execute('silent! checktime') : 0}, {'repeat': -1})
+endif
+
 colorscheme jellybeans
 
 autocmd BufNewFile,BufRead *.md,*.markdown setlocal textwidth=80 spell
